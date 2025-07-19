@@ -3,8 +3,20 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "combine-md": "bun run ./tools/markdown-combiner/combine.ts",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write .",
+    "typecheck": "bun tsc"
+  },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
+    "eslint": "^9.31.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.6.2"
   },
   "peerDependencies": {
     "typescript": "^5"
