@@ -44,30 +44,41 @@ import { resolve, join } from 'path';
     }
 
     // 3. Smart File Discovery (Recursive)
-    const allFiles = await readdir(sourcePath, { recursive: true });
-    const markdownFiles = allFiles
-      .filter((file): file is string => typeof file === 'string' && (file.endsWith('.md') || file.endsWith('.mdx') || file.endsWith('.markdown')))
-      .sort(); // Sort for predictable order
+    const allFiles = await readdir(sourcePath, { recursive: true, withFileTypes: true });
+
+    const excludeFolders = ['.git', 'tmp', 'node_modules', 'dist', 'build'];
+    const excludeFiles = ['*.DS_Store', '*.log', '*.tmp', 'package-lock.json', 'yarn.lock', 'bun.lockb'];
+    const files = allFiles
+      .filter((file) => {
+        const isExcludedFolder = excludeFolders.some((folder) => file.parentPath.includes(folder));
+        const isExcludedFile = excludeFiles.some((pattern) => file.name.match(new RegExp(pattern.replace('*', '.*'))));
+        return !isExcludedFolder && !isExcludedFile && file.isFile();
+      })
+      .sort(); 
 
     // 4. Handle No Files Found
-    if (markdownFiles.length === 0) {
+    if (files.length === 0) {
       console.warn(`⚠️ No Markdown files found in '${sourcePath}'. Exiting.`);
       return;
     }
 
-    console.log(`📚 Found ${markdownFiles.length} files to combine.`);
+    console.log(`📚 Found ${files.length} files to combine.`);
 
     // 5. Intelligent Concatenation
     const combinedContent: string[] = [`# Combined Documentation\n`];
+    
+    for (const fileInfo of files) {
+      const fullPath = join(fileInfo.parentPath, fileInfo.name);
+      console.log(`   ↳ Combining: ${fullPath}`);
 
-    for (const relativePath of markdownFiles) {
-      console.log(`   ↳ Combining: ${relativePath}`);
-      const fullPath = join(sourcePath, relativePath);
-
-      const separator = `\n---\n## Source: ${relativePath}\n---\n`;
+      const separator = `\n---\n## Source: ${fullPath}\n---\n`;
+      // if file is markdown, append its content if not, add it to code block
       const fileContent = await Bun.file(fullPath).text();
-
-      combinedContent.push(separator, fileContent);
+      if (!fileInfo.name.endsWith('.md')) {
+        combinedContent.push(separator, `\`\`\`\n${fileContent}\n\`\`\``);
+      } else {
+        combinedContent.push(separator, fileContent);
+      }
     }
 
     // 6. Write the final output

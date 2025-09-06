@@ -36,3 +36,5 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # Combined markdown files (example output)
 combined.md
 bundle.md
+
+combined

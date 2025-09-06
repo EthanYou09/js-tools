@@ -20,9 +20,5 @@
   },
   "peerDependencies": {
     "typescript": "^5"
-  },
-  "dependencies": {
-    "swagger-ui-express": "^5.0.1",
-    "yamljs": "^0.3.0"
   }
 }
